@@ -1,16 +1,3 @@
+data_cleaning/__pycache__/
 .DS_Store
-cleaning_scripts/.DS_Store
-raw_data/.DS_Store
-vectors/.DS_Store
-vectors/sentence/.DS_Store
-vectors/sentence/chats/.DS_Store
-vectors/sentiment/turns/.DS_Store
-vectors/sentence/turns/.DS_Store
-vectors/sentiment/chats/cumulative/within_task/.DS_Store
-vectors/sentence/chats/cumulative/within_task/.DS_Store
-vectors/sentence/chats/cumulative/.DS_Store
-vectors/sentiment/chats/cumulative/within_task/cumulative/.DS_Store
-vectors/sentiment/chats/.DS_Store
-vectors/sentiment/.DS_Store
-vectors/*
 raw_data/results_by_user_detailed.csv

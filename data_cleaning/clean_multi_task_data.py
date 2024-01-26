@@ -6,6 +6,8 @@ import json
 import re
 import csv
 import ast
+import os
+from pathlib import Path
 
 """
 Build a dictionary that allows us to look up the stages from the gameId
@@ -51,8 +53,9 @@ def build_game_id_dict(multi_task_data, multi_task_stages):
 Parse information from being lumped together across stages into 'conversations' for each stage
 """
 def process_data_into_conversations(muti_task_chat, game_id_lookup):
-
-	with open('../raw_data/multi_task_conversations.csv', 'w', newline='') as csvfile:
+	current_script_directory = Path(__file__).resolve().parent
+	output_path = current_script_directory / '../raw_data/multi_task_conversations.csv'
+	with open(output_path, 'w', newline='') as csvfile:
 		# start writing the header of the CSV
 		fieldnames = ["stageId", "roundId", "gameId", "message", "speaker_nickname", "timestamp"]
 		writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
@@ -72,31 +75,31 @@ def process_data_into_conversations(muti_task_chat, game_id_lookup):
 			stage_timings = list(stage_dict.values())
 			
 			for chat in chat_list:
-			  text = chat['text']
-			  speaker = chat['player']['_id']
-			  timestamp = chat['timeStamp']
-			  stage_id = ""
+				text = chat['text']
+				speaker = chat['player']['_id']
+				timestamp = chat['timeStamp']
+				stage_id = ""
 
-			  # Determine which stage a chat was spoken in
-			  if(len(stageIds) == 3):
-				if(timestamp < stage_timings[1]):
-				  stage_id = stageIds[0]
-				if(timestamp >= stage_timings[1] and timestamp < stage_timings[2]):
-					stage_id = stageIds[1]
-				if(timestamp >= stage_timings[2]):
-					stage_id = stageIds[2]
-			  elif(timestamp == 2):
-				if(timestamp < stage_timings[1]):
-				  stage_id = stageIds[0]
-				if(timestamp >= stage_timings[1]):
-				  stage_id = stageIds[1]
-			  else:
-				  stage_id = stageIds[0]
+				# Determine which stage a chat was spoken in
+				if(len(stageIds) == 3):
+					if(timestamp < stage_timings[1]):
+						stage_id = stageIds[0]
+					if(timestamp >= stage_timings[1] and timestamp < stage_timings[2]):
+						stage_id = stageIds[1]
+					if(timestamp >= stage_timings[2]):
+						stage_id = stageIds[2]
+				elif(timestamp == 2):
+					if(timestamp < stage_timings[1]):
+						stage_id = stageIds[0]
+					if(timestamp >= stage_timings[1]):
+						stage_id = stageIds[1]
+				else:
+					stage_id = stageIds[0]
 
-			  chat_obj = {'stageId':stage_id, 'roundId': round_id, 'gameId':game_id, 'message': text, 'speaker_nickname': speaker, 'timestamp': timestamp}
+				chat_obj = {'stageId':stage_id, 'roundId': round_id, 'gameId':game_id, 'message': text, 'speaker_nickname': speaker, 'timestamp': timestamp}
 
-			  # Write the row
-			  writer.writerow(chat_obj)
+				# Write the row
+				writer.writerow(chat_obj)
 
 """
 Get DV's so that they can be merged back.
@@ -121,7 +124,9 @@ User composition information
 - Add in the features of the members of the group.
 """
 def compile_user_information():
-	user_info = pd.read_csv('../raw_data/results_by_user_detailed.csv').rename(columns = {"stageIds": "stageId"})
+	current_script_directory = Path(__file__).resolve().parent
+
+	user_info = pd.read_csv(current_script_directory / '../raw_data/results_by_user_detailed.csv').rename(columns = {"stageIds": "stageId"})
 
 	threshold = 0.8  # 80% threshold
 	user_info = user_info.dropna(axis=1, thresh=int(threshold * len(user_info)))
@@ -173,7 +178,7 @@ def compile_user_information():
 	composition_by_stageId = user_info.groupby('stageId')[numeric_columns].agg([np.nanmean, np.nanstd])
 
 	# Flatten the multi-level column index
-	composition_by_stageId.columns = ['_'.join(col).strip() for col in grouped_df.columns.values]
+	composition_by_stageId.columns = ['_'.join(col).strip() for col in composition_by_stageId.columns.values]
 
 	return(composition_by_stageId)
 
@@ -196,7 +201,6 @@ User-provided parameters:
 @param tiny: filter to just the first 3 games. (for testing!) Defaults to false.
 """
 def save_final_result(conversations_raw, multi_task_dv, composition_by_stageId, conversations_with_dv_and_composition, output_path, conversation_id, use_mean_for_roundId = False, tiny = False):
-
 	assert conversation_id in {"stageId", "roundId"}, "The parameter `conversation_id must be one of `stageId` or `roundId`!"
 
 	if conversation_id == "stageId":
@@ -234,16 +238,17 @@ User-provided parameters:
 @param tiny: filter to just the first 3 games. (for testing!) Defaults to false.
 """
 def clean_multi_task_data(output_path, conversation_id, use_mean_for_roundId = False, tiny = False):
+	current_script_directory = Path(__file__).resolve().parent
 
-	multi_task_data = pd.read_csv('../raw_data/multi_task_data_with_dv_by_rounds.csv')
+	multi_task_data = pd.read_csv(current_script_directory / '../raw_data/multi_task_data_with_dv_by_rounds.csv')
 	muti_task_chat = multi_task_data[["_id", "gameId", "data.A"]].drop_duplicates()
-	multi_task_stages = pd.read_csv('../raw_data/multi_task_stages.csv')
+	multi_task_stages = pd.read_csv(current_script_directory / '../raw_data/multi_task_stages.csv', low_memory=False)
 
 	game_id_lookup = build_game_id_dict(multi_task_data, multi_task_stages)
 	process_data_into_conversations(muti_task_chat, game_id_lookup)
 
 	# This was the result of `process_data_into_conversations`
-	conversations_raw = pd.read_csv('../raw_data/multi_task_conversations.csv').sort_values(['gameId', 'roundId', 'stageId','timestamp'])
+	conversations_raw = pd.read_csv(current_script_directory / '../raw_data/multi_task_conversations.csv').sort_values(['gameId', 'roundId', 'stageId','timestamp'])
 
 	# Add DV's back
 	multi_task_dv = get_dvs(multi_task_data)
