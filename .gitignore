@@ -1,3 +1,5 @@
 data_cleaning/__pycache__/
 .DS_Store
+vector_data/sentiment/*
+vector_data/sentence/*
 raw_data/results_by_user_detailed.csv
