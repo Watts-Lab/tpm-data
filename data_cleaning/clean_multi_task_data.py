@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+pd.options.mode.chained_assignment = None 
 import matplotlib.pyplot as plt
 import seaborn as sns
 import json
@@ -123,11 +124,7 @@ def add_dv_back_to_conversation(conversations_raw, multi_task_dv):
 User composition information
 - Add in the features of the members of the group.
 """
-def compile_user_information():
-	current_script_directory = Path(__file__).resolve().parent
-
-	user_info = pd.read_csv(current_script_directory / '../raw_data/results_by_user_detailed.csv').rename(columns = {"stageIds": "stageId"})
-
+def compile_user_information(user_info):
 	threshold = 0.8  # 80% threshold
 	user_info = user_info.dropna(axis=1, thresh=int(threshold * len(user_info)))
 	#### TODO --- figure out better way to handle NA's here!
@@ -232,30 +229,45 @@ def save_final_result(conversations_raw, multi_task_dv, composition_by_stageId, 
 Cleans the multi-task dataset according to the user's provided specifications.
 ---
 User-provided parameters:
+
+Input paths:
+--- Note that these files can be generated from the script saved in `data_cleaning_dev/MultiTask_Input_Generator_for_Horserace.R`.
+They have to be run in the "Analysis" folder of the `multi-task data`.
+@param raw_round_data_path: The path to the round-based data.
+@param raw_stage_data_path: The path to the stage-based data.
+@param raw_user_data_path: The path to the user-based data (with information merged in from the full panel)
+Output path:
 @param output_path: the desired output path of the CSV.
+Additional specifications:
 @param conversation_id: one of {"stageId", "roundId"}, depending on the data grouping desired by the user.
 @param use_mean_for_roundId: use the mean across three stages when grouping by roundId. Defaults to false (and uses the performance for the FINAL task in a round.)
 @param tiny: filter to just the first 3 games. (for testing!) Defaults to false.
 """
-def clean_multi_task_data(output_path, conversation_id, use_mean_for_roundId = False, tiny = False):
+def clean_multi_task_data(raw_round_data_path, raw_stage_data_path, raw_user_data_path, output_path, conversation_id, use_mean_for_roundId = False, tiny = False):
 	current_script_directory = Path(__file__).resolve().parent
+	multi_task_data = pd.read_csv(current_script_directory.parent / raw_round_data_path)
+	multi_task_stages = pd.read_csv(current_script_directory.parent / raw_stage_data_path, low_memory=False)
+	user_info = pd.read_csv(current_script_directory.parent / raw_user_data_path).rename(columns = {"stageIds": "stageId"})
 
-	multi_task_data = pd.read_csv(current_script_directory / '../raw_data/multi_task_data_with_dv_by_rounds.csv')
+	# Add assertions for the expected / required values in each of the input datasets, to ensure the format is correct
+	assert {"_id", "gameId", "data.A"}<=set(multi_task_data.columns), "Error: Colnames for multi-task round data are incorrect!"
+	assert {"_id", "startTimeAt"}<=set(multi_task_stages.columns), "Error: Colnames for multi-task stage data are incorrect!"
+	assert {'stageId', 'birth_year', 'CRT', 'income_max', 'income_min', 'IRCS_GS', 'IRCS_GV', 'IRCS_IB', 'IRCS_IR', 'IRCS_IV', 'IRCS_RS', 'political_fiscal', 'political_social', 'RME', 'country', 'education_level', 'gender', 'marital_status', 'political_party', 'race'}<=set(user_info.columns), "Error: Colnames for multi-task user data are incorrect!"
+
 	muti_task_chat = multi_task_data[["_id", "gameId", "data.A"]].drop_duplicates()
-	multi_task_stages = pd.read_csv(current_script_directory / '../raw_data/multi_task_stages.csv', low_memory=False)
 
 	game_id_lookup = build_game_id_dict(multi_task_data, multi_task_stages)
 	process_data_into_conversations(muti_task_chat, game_id_lookup)
 
-	# This was the result of `process_data_into_conversations`
-	conversations_raw = pd.read_csv(current_script_directory / '../raw_data/multi_task_conversations.csv').sort_values(['gameId', 'roundId', 'stageId','timestamp'])
+	# This was the result of `process_data_into_conversations`; it's a temporary CSV that is not used.
+	conversations_raw = pd.read_csv(current_script_directory.parent / 'raw_data/multi_task_conversations.csv').sort_values(['gameId', 'roundId', 'stageId','timestamp'])
 
 	# Add DV's back
 	multi_task_dv = get_dvs(multi_task_data)
 	conversations_with_dv = add_dv_back_to_conversation(conversations_raw, multi_task_dv)
 
 	# Add in user information
-	composition_by_stageId = compile_user_information()
+	composition_by_stageId = compile_user_information(user_info)
 
 	# This dataframe aggregates all the composition-level features
 	conversations_with_dv_and_composition = conversations_with_dv.merge(composition_by_stageId, on = "stageId", how = "left")

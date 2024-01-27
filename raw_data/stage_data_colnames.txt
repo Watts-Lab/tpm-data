@@ -1,244 +1,0 @@
-_id
-index
-name
-displayName
-startTimeAt
-durationInSeconds
-roundId
-gameId
-createdAt
-data.type
-data.component_path
-data.stage_type
-data.stage_count
-data.anonName
-data.stage_config
-data.constants
-data.maxPossibleScore
-data.student-A-room
-data.student-B-room
-data.student-C-room
-data.student-D-room
-data.constraint-1-A-C-violated
-data.startTimeAt
-data.defaultStageLength
-data.defaultEndTimeAt
-data.student-B-dragger
-data.student-D-dragger
-data.student-C-dragger
-data.student-A-dragger
-data.endTimeAt
-data.stageLength
-data.student-E-room
-data.student-F-room
-data.constraint-0-C-F-violated
-data.constraint-3-D-E-violated
-data.student-E-dragger
-data.student-F-dragger
-data.student-G-room
-data.student-H-room
-data.constraint-1-C-D-violated
-data.constraint-2-D-E-violated
-data.constraint-3-E-H-violated
-data.constraint-1-F-H-violated
-data.student-H-dragger
-data.student-G-dragger
-data.student-I-room
-data.student-J-room
-data.student-K-room
-data.student-L-room
-data.student-M-room
-data.student-N-room
-data.student-O-room
-data.student-P-room
-data.student-Q-room
-data.student-R-room
-data.constraint-2-A-B-violated
-data.constraint-3-A-J-violated
-data.constraint-2-B-F-violated
-data.constraint-0-B-H-violated
-data.constraint-3-B-P-violated
-data.constraint-2-C-E-violated
-data.constraint-1-C-J-violated
-data.constraint-3-D-F-violated
-data.constraint-3-E-Q-violated
-data.constraint-1-F-I-violated
-data.constraint-2-G-J-violated
-data.constraint-3-I-N-violated
-data.constraint-3-J-K-violated
-data.constraint-2-K-R-violated
-data.constraint-3-L-Q-violated
-data.constraint-0-M-O-violated
-data.constraint-0-N-R-violated
-data.constraint-2-O-P-violated
-data.student-R-dragger
-data.student-K-dragger
-data.student-Q-dragger
-data.student-O-dragger
-data.student-J-dragger
-data.student-N-dragger
-data.student-P-dragger
-data.student-I-dragger
-data.student-M-dragger
-data.student-L-dragger
-data.scoreArr
-data.score
-data.wgc-config
-data.goat-dragger
-data.boat
-data.wolf-dragger
-data.wolf
-data.cabbage-dragger
-data.cabbage
-data.caterpillar-dragger
-data.value
-data.guessed
-data.submitted
-data.currBoardData
-data.editableCellID
-data.clickingCellID
-data.duplicateCellID
-data.isDisagree
-data.isDuplicate
-data.isSolved
-data.dots
-data.etherpadData
-data.sandboxWordList
-data.finalWordList
-data.scoreIncrement
-data.maxScore
-data.wordsList
-data.allocations
-data.case
-data.option
-data.student-\nRoom 102\nPayoff\nRooms	101	102\nStudent -dragger
-data.student-\nRoom 102\nPayoff\nRooms	101	102\nStudent -room
-data.amount0
-data.amount1
-data.amount2
-data.student-Current Solution Quality\n329\nRoom 101\nRoom 102\nRoom 103\n-dragger
-data.student-Current Solution Quality\n329\nRoom 101\nRoom 102\nRoom 103\n-room
-data.log
-data.similarity
-data.caterpillar
-data.goat
-data.\ncabbage\n-dragger
-data.\nwolf\n-dragger
-data.wolf\ngoat\ncaterpillar\n-dragger
-data.Moves Taken: 2\n←→\nEmpty boat\nConstraints:\n\n- Remaining spots: 2\n- No eating occurs on boat\n\n- Wolf eats Goat\n- Goat eats Caterpillar\n- Caterpillar eats Cabbage\n-dragger
-data.\nwolf\ngoat\n-dragger
-data.cabbage\n-dragger
-data.goat\n-dragger
-batchId
-playerId
-stageId
-submittedAt
-data.maxPossiblePay
-data.payEarned
-data.correct
-data.directionsCompleted
-data.showOverview
-data.showInstructions
-data.showPerformance
-data.showAlertPractice
-data.showQuiz
-data.approved
-data.coords
-data.dotsClaimed
-data.scoreFeedback
-data.clicked
-data.student-
-\nRoom 102
-\nPayoff
-\nRooms	101	102
-\nStudent -dragger
-data.student-
-\nRoom 102
-\nPayoff
-\nRooms	101	102
-\nStudent -room
-data.student-Current Solution Quality
-\n329
-\nRoom 101
-\nRoom 102
-\nRoom 103
-\n-dragger
-data.student-Current Solution Quality
-\n329
-\nRoom 101
-\nRoom 102
-\nRoom 103
-\n-room
-data.
-\ncabbage
-\n-dragger
-data.
-\nwolf
-\n-dragger
-data.wolf
-\ngoat
-\ncaterpillar
-\n-dragger
-data.Moves Taken: 2
-\n←→
-\nEmpty boat
-\nConstraints:
-\n
-\n- Remaining spots: 2
-\n- No eating occurs on boat
-\n
-\n- Wolf eats Goat
-\n- Goat eats Caterpillar
-\n- Caterpillar eats Cabbage
-\n-dragger
-data.
-\nwolf
-\ngoat
-\n-dragger
-data.cabbage
-\n-dragger
-data.goat
-\n-dragger
-data.idledPlayers
-data.student-101\nRoom 102\nRoom 103\nRoom 104\nRoom 105\n-dragger
-data.student-101\nRoom 102\nRoom 103\nRoom 104\nRoom 105\n-room
-data.student-\nCurrent Solution Quality\n102\nRoom 101\nRoom 102\n-dragger
-data.student-\nCurrent Solution Quality\n102\nRoom 101\nRoom 102\n-room
-data.student-Current Solution Quality\n325\nRoom 101\nRoom 102\nRoom 10-dragger
-data.student-Current Solution Quality\n325\nRoom 101\nRoom 102\nRoom 10-room
-data.student-Current Solution Quality\n218\nRoom 101\nRoom 102\nRoom 10-dragger
-data.student-Current Solution Quality\n218\nRoom 101\nRoom 102\nRoom 10-room
-data.\nMoves Taken: 2\n←→\nEmpty boat\nConstraints:\n\n- Remaining spots: 1\n- No eating occurs on boat\n\n- Wolf eats Goat\n- Goat eats Cabbage\n-dragger
-data.\nwolf\ngoat\nMoves Taken: 1\n←→\nEmpty boat\nConstraints:\n\n- Remaining spots: 2\n- No eating occurs on boat\n\n- Wolf eats Goat\n- Goat eats Cabbage\nIncorrect!\nA constraint was broken:\n\n- Wolf and Goat\n- Goat and Cabbage\n\nClick reset to try again\n\n-dragger
-data.\nwolf\nMoves Taken: 4\n←→\nEmpty boat\nConstraints:\n\n- Remaining spots: 2\n- No eating occurs on boat\n\n- Wolf eats Goat\n- Goat eats Cabbage\nIncorrect!\nA constraint was broken:\n\n- Wolf and Goat\n- Goat and Cabbage\n\nClick reset to try again\n\n-dragger
-data.\ncabbage\nMoves Taken: 4\n←→\nEmpty boat\nConstraints:\n\n- Remaining spots: 2\n- No eating occurs on boat\n\n- Wolf eats Goat\n- Goat eats Cabbage\nIncorrect!\nA constraint was broken:\n\n- Wolf and Goat\n- Goat and Cabbage\n\nClick reset to try again\n\n-dragger
-data.student-\nRoom 105\n-dragger
-data.student-\nRoom 105\n-room
-data.student-Current Solution Quality\n480\nRoom 101\nRoom 102\nRoom 103\nRoom 104\nRoom 105\nRoom 106\nRoom 107\nRoom 108-dragger
-data.student-Current Solution Quality\n480\nRoom 101\nRoom 102\nRoom 103\nRoom 104\nRoom 105\nRoom 106\nRoom 107\nRoom 108-room
-data.\nwolf\ncabbage\n-dragger
-data.student-Room-dragger
-data.student-Room-room
-data.student-Room 103\nRoom 104\nRoom 105\n-dragger
-data.student-Room 103\nRoom 104\nRoom 105\n-room
-data.student-M\nQ\nCurrent Solution Quality\n-155\nRoom 101\nRoom 102\nN\nR\nRoom 103\nA\nC\nRoom 104\nB\nE\nRoom 105\nJ-dragger
-data.student-M\nQ\nCurrent Solution Quality\n-155\nRoom 101\nRoom 102\nN\nR\nRoom 103\nA\nC\nRoom 104\nB\nE\nRoom 105\nJ-room
-data.student-Current Solution Quality\n637\nRoom 101\nRoom 102\nRoom 103\n-dragger
-data.student-Current Solution Quality\n637\nRoom 101\nRoom 102\nRoom 103\n-room
-data.student-Room 105\nRoom 106\nRoom 107\nRoom 108\n-dragger
-data.student-Room 105\nRoom 106\nRoom 107\nRoom 108\n-room
-data.student-Room 105\n-dragger
-data.student-Room 105\n-room
-data.wolf\ngoat\ncabbage\ncaterpillar\n-dragger
-data.student-Current Solution Quality\n292\nRoom 101\nRoom 102\n-dragger
-data.student-Current Solution Quality\n292\nRoom 101\nRoom 102\n-room
-data.student-Room 102\n-dragger
-data.student-Room 102\n-room
-data.student-Current Solution Quality\n-145\nRoom 101\nRoom 102\nRoom 103\nRoom 104\nH\nRoom 105\nRoom 106\n-dragger
-data.student-Current Solution Quality\n-145\nRoom 101\nRoom 102\nRoom 103\nRoom 104\nH\nRoom 105\nRoom 106\n-room
-data.student-\nRoom 102\nRoom 103\n-dragger
-data.student-\nRoom 102\nRoom 103\n-room
-data.student-\nCurrent Solution Quality\n301\nRoom 101\n-dragger
-data.student-\nCurrent Solution Quality\n301\nRoom 101\n-room
-data.student-Room 104\n-dragger
-data.student-Room 104\n-room
