@@ -21,6 +21,69 @@ load_CSVs <- function(pattern) {
 
 rounds <- load_CSVs("rounds.csv")
 stages <- load_CSVs("stages.csv")
+players <- load_CSVs("players.csv")
+player_rounds <- load_CSVs("player-rounds.csv")
+games <- load_CSVs("games.csv")
+factors <- load_CSVs("factors.csv")
+factor_types <- load_CSVs("factor-types.csv")
+treatments <- load_CSVs("treatments.csv")
+player_stages <- load_CSVs("player-stages.csv")
+player_inputs <- load_CSVs("player-inputs.csv") |>
+  mutate(data.gender = case_when(
+    grepl("f.*", tolower(data.gender)) ~ "Female",
+    grepl("w.*", tolower(data.gender)) ~ "Female",
+    grepl("m.*", tolower(data.gender)) ~ "Male",
+    TRUE ~ "Other"
+  ))
+offline_scoring <- read_csv('../Wave 1 data/offline scoring.csv')
+
+conditions <- factors |> 
+  select(factorId = "_id",value, factorTypeId) |> 
+  inner_join(factor_types |>
+               select(factorTypeId = "_id", name) |> 
+               filter(name %in% c("unitsSeed", "unitsIndex", "playerCount"))) |>
+  inner_join(
+    treatments |>
+      rename(treatmentId = "_id") |>
+      mutate(factorId = str_split(factorIds, ",")) |>
+      unnest() |> select(treatmentId, factorId),
+  ) |>
+  select(-matches("factor")) |> 
+  distinct() |>
+  pivot_wider() |>
+  na.omit()
+
+player_conditions <- players |>
+  rename(playerId = "_id") |> 
+  left_join(player_rounds |> select(playerId, gameId) |> distinct()) |>
+  left_join(games |> select(`_id`, treatmentId), by = c("gameId" = "_id")) |>
+  left_join(conditions) |>
+  select(-treatmentId, -gameId)
+
+complexity_levels = c("Low","Medium","High")
+
+task_instances <-
+  stages |>
+  filter(!grepl("(Practice|Intro)", displayName)) |>
+  filter(!is.na(data.constants)) |> # This removes missing constants, but unclear if that's correct
+  mutate(
+    stageId = `_id`,
+    instance = sub('.*"name":"(.*?)".*',"\\1", data.constants),
+    instance_number = case_when(
+      grepl("zero", instance) ~ 0,
+      grepl("one", instance) ~ 1,
+      grepl("two", instance) ~ 2,
+      grepl("three", instance) ~ 3,
+      grepl("0", instance) ~ 0,
+      grepl("1", instance) ~ 1,
+      grepl("2", instance) ~ 2,
+      grepl("3", instance) ~ 3,
+      TRUE ~ NaN
+    ),
+    instance = if_else(grepl("dat instance ",instance), instance_number + 1, instance_number),
+    complexity = ordered(instance, labels = complexity_levels)
+  ) |> 
+  select(stageId,instance,data.constants, complexity)
 
 raw_score_data <-
   player_conditions |>
@@ -61,7 +124,6 @@ raw_score_data <-
          stageId) |>
   unique() |>
   na.omit()
-
 #### -----------------------------------------------------------------------------------
 # Emily's Data Cleaning
 
@@ -80,7 +142,20 @@ merged_data <- rounds_with_chat %>%
 merged_data %>% write_csv("multi_task_data_with_dv_by_rounds.csv")
 
 # Individual Participant Information
-panel_data <- read_csv("https://raw.githubusercontent.com/Watts-Lab/panel/main/clean_data/individuals.csv?token=GHSAT0AAAAAACLLXRSYYCKNMMARLSLLBKZ4ZNUF75A")
+panel_data <- read_csv("https://raw.githubusercontent.com/Watts-Lab/panel/main/clean_data/individuals.csv?token=GHSAT0AAAAAACNTSY6HT3WNT5RHANKNJVNAZOABFLA")
+
+# contains gender, age, education
+demographics <- player_inputs %>%
+  select(gameId, playerId, data.age, data.gender, data.education)
+# contains MTurk ID (for merge)
+player_ids <- player_conditions %>%
+  filter(nchar(id) < 20) %>%
+  select(playerId, id)
+results_by_user <- demographics %>%
+  left_join(merged_data, by = "gameId") %>%
+  filter(!is.na(score)) %>%
+  left_join(player_ids, by="playerId")
+
 results_by_user_with_panel_info <- results_by_user %>%
   left_join(panel_data, by = c("id" = "WorkerId"))
 results_by_user_with_panel_info %>% write_csv('results_by_user_detailed.csv')
