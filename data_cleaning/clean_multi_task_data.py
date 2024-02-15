@@ -125,11 +125,9 @@ User composition information
 - Add in the features of the members of the group.
 """
 def compile_user_information(user_info):
-	threshold = 0.8  # 80% threshold
-	user_info = user_info.dropna(axis=1, thresh=int(threshold * len(user_info)))
-	#### TODO --- figure out better way to handle NA's here!
-
 	user_info.loc[:, 'country'] = (user_info['country'] == 'United States').astype(int)
+	user_info['country'] = user_info['country'].astype(int)
+
 	education_order = [
 		'Less than a high school diploma',
 		'High school diploma',
@@ -139,7 +137,7 @@ def compile_user_information(user_info):
 		'Post-college degree'
 	]
 	user_info['education_level'] = pd.Categorical(user_info['education_level'], categories=education_order, ordered=True)
-	user_info['education_level_numeric'] = user_info['education_level'].cat.codes
+	user_info['education_level'] = user_info['education_level'].cat.codes
 	gender_order = [
 		'Male',
 		'Female',
@@ -165,14 +163,14 @@ def compile_user_information(user_info):
 	]
 	user_info['political_party'] = pd.Categorical(user_info['political_party'], categories=politicalparty_order, ordered=True)
 	user_info['political_party'] = user_info['political_party'].cat.codes
+
 	user_info.loc[:, 'race'] = (user_info['race'] == 'White').astype(int)
+	user_info['race'] = user_info['race'].astype(int)
 
-	user_features_numeric = user_info[['birth_year', 'CRT', 'income_max', 'income_min', 'IRCS_GS', 'IRCS_GV', 'IRCS_IB', 'IRCS_IR', 'IRCS_IV', 'IRCS_RS', 'political_fiscal', 'political_social', 'RME', 'country', 'education_level', 'gender', 'marital_status', 'political_party', 'race']]
-
-	numeric_columns = user_features_numeric.select_dtypes(include='number').columns.difference(['stageId'])
+	user_features_numeric = ['birth_year', 'CRT', 'income_max', 'income_min', 'IRCS_GS', 'IRCS_GV', 'IRCS_IB', 'IRCS_IR', 'IRCS_IV', 'IRCS_RS', 'political_fiscal', 'political_social', 'RME', 'country', 'education_level', 'gender', 'marital_status', 'political_party', 'race']
 
 	# Group by 'ID' and calculate mean and std for all numeric columns
-	composition_by_stageId = user_info.groupby('stageId')[numeric_columns].agg([np.nanmean, np.nanstd])
+	composition_by_stageId = user_info.groupby('stageId')[user_features_numeric].agg(["mean", "std"])
 
 	# Flatten the multi-level column index
 	composition_by_stageId.columns = ['_'.join(col).strip() for col in composition_by_stageId.columns.values]
@@ -194,31 +192,58 @@ From previous preprocessing steps:
 User-provided parameters:
 @param output_path: the desired output path of the CSV.
 @param conversation_id: one of {"stageId", "roundId"}, depending on the data grouping desired by the user.
+@param dv_id: also one of {"stageId", "roundId"}. Controls what level we are examining for the dependent variable.
 @param use_mean_for_roundId: use the mean across three stages when grouping by roundId. Defaults to false (and uses the performance for the FINAL task in a round.)
 @param tiny: filter to just the first 3 games. (for testing!) Defaults to false.
 """
-def save_final_result(conversations_raw, multi_task_dv, composition_by_stageId, conversations_with_dv_and_composition, output_path, conversation_id, use_mean_for_roundId = False, tiny = False):
+def save_final_result(conversations_raw, multi_task_dv, composition_by_stageId, conversations_with_dv_and_composition, output_path, conversation_id, dv_id, use_mean_for_roundId = False, tiny = False):
 	assert conversation_id in {"stageId", "roundId"}, "The parameter `conversation_id must be one of `stageId` or `roundId`!"
+	assert dv_id in {"stageId", "roundId"}, "The parameter `dv_id must be one of `stageId` or `roundId`!"
 
-	if conversation_id == "stageId":
+	# 2 ways of getting roundId-based dependent variables
+	if(use_mean_for_roundId):
+		# Gets the dependent variables averaged by round
+		dv_mean =  multi_task_dv.groupby("roundId").agg({
+			"score": np.mean,
+			"speed": np.mean,
+			"efficiency": np.mean,
+			"raw_duration_min": np.mean,
+			"default_duration_min": np.mean,
+			"task": "last",
+			"playerCount": "last"
+		}).reset_index()
+	if(not use_mean_for_roundId):
+		last_roundId_dv = conversations_raw.sort_values(by=['timestamp', 'roundId']).merge(multi_task_dv, on = ['stageId', 'roundId'], how = 'left')[["roundId", "score", "speed", "efficiency", "raw_duration_min", "default_duration_min", "task", "complexity", "playerCount", "stageId"]].groupby('roundId').tail(1)
+		assert len(last_roundId_dv["roundId"].value_counts()) == len(last_roundId_dv["stageId"].value_counts()), "There should be exactly 1 stageId per roundId."
+
+	# Conversation ID = StageID and DV ID = StageId
+	if conversation_id == "stageId" and dv_id == "stageId":
 		output = conversations_with_dv_and_composition
-	elif conversation_id == "roundId":
+	# Conversation ID = StageID and DV ID = RoundId
+	elif conversation_id == "stageId" and dv_id == "roundId":
 		if(use_mean_for_roundId):
-			# Gets the dependent variables averaged by round
-			dv_mean =  multi_task_dv.groupby("roundId").agg({
-				"score": np.mean,
-				"speed": np.mean,
-				"efficiency": np.mean,
-				"raw_duration_min": np.mean,
-				"default_duration_min": np.mean,
-				"task": "last",
-				"playerCount": "last"
-			}).reset_index()
+			merged_df = conversations_raw.merge(dv_mean, on = "stageId", how = "right")
+			assert merged_df["roundId_x"].equals(merged_df["roundId_y"]), "Both merged roundIds need to be the same."
+			assert len(merged_df["roundId_y"].value_counts()) == len(merged_df["stageId"].value_counts()), "There should be exactly 1 stageId per roundId."
+			merged_df = merged_df.drop("roundId_y", axis=1).rename(columns={"roundId_x": "roundId"})
+			output = merged_df.merge(composition_by_stageId, on = "stageId", how = "left")
+			output = output.sort_values("gameId")
+		else:
+			merged_df = conversations_raw.merge(last_roundId_dv, on = "stageId", how = "right")
+			assert merged_df["roundId_x"].equals(merged_df["roundId_y"]), "Both merged roundIds need to be the same."
+			assert len(merged_df["roundId_y"].value_counts()) == len(merged_df["stageId"].value_counts()), "There should be exactly 1 stageId per roundId."
+			merged_df = merged_df.drop("roundId_y", axis=1).rename(columns={"roundId_x": "roundId"})
+			output = merged_df.merge(composition_by_stageId, on = "stageId", how = "left")
+			output = output.sort_values("gameId")
 
+	# Conversation ID = RoundId and DV ID = RoundId
+	elif conversation_id == "roundId" and dv_id == "roundId":
+		if(use_mean_for_roundId):
 			output = conversations_raw.merge(dv_mean, on = "roundId", how = "left").merge(composition_by_stageId, on = "stageId", how = "left")
 		else:
-			last_roundId_dv = conversations_raw.sort_values(by=['timestamp', 'roundId']).merge(multi_task_dv, on = ['stageId', 'roundId'], how = 'left')[["roundId", "score", "speed", "efficiency", "raw_duration_min", "default_duration_min", "task", "complexity", "playerCount"]].groupby('roundId').tail(1)
 			output = conversations_raw.merge(last_roundId_dv, on = "roundId", how = "left").merge(composition_by_stageId, on = "stageId", how = "left")
+	else:
+		print("Sorry, Conversation ID = roundId and DV ID = stageId is currently not supported.")
 
 	if(tiny):
 		output.groupby('gameId').head(3).to_csv(output_path, index=False)
@@ -240,10 +265,15 @@ Output path:
 @param output_path: the desired output path of the CSV.
 Additional specifications:
 @param conversation_id: one of {"stageId", "roundId"}, depending on the data grouping desired by the user.
+@param dv_id: also one of {"stageId", "roundId"}. Controls what level we are examining for the dependent variable.
 @param use_mean_for_roundId: use the mean across three stages when grouping by roundId. Defaults to false (and uses the performance for the FINAL task in a round.)
 @param tiny: filter to just the first 3 games. (for testing!) Defaults to false.
 """
-def clean_multi_task_data(raw_round_data_path, raw_stage_data_path, raw_user_data_path, output_path, conversation_id, use_mean_for_roundId = False, tiny = False):
+def clean_multi_task_data(raw_round_data_path, raw_stage_data_path, raw_user_data_path, output_path, conversation_id, dv_id = None, use_mean_for_roundId = False, tiny = False):
+	
+	if(dv_id is None):
+		dv_id = conversation_id
+
 	current_script_directory = Path(__file__).resolve().parent
 	multi_task_data = pd.read_csv(current_script_directory.parent / raw_round_data_path)
 	multi_task_stages = pd.read_csv(current_script_directory.parent / raw_stage_data_path, low_memory=False)
@@ -276,4 +306,4 @@ def clean_multi_task_data(raw_round_data_path, raw_stage_data_path, raw_user_dat
 	conversations_with_dv_and_composition["message"] = conversations_with_dv_and_composition["message"].fillna("NULL_MESSAGE")
 	conversations_with_dv_and_composition["speaker_nickname"] = conversations_with_dv_and_composition["speaker_nickname"].fillna("NULL_SPEAKER")
 
-	save_final_result(conversations_raw, multi_task_dv, composition_by_stageId, conversations_with_dv_and_composition, output_path, conversation_id, use_mean_for_roundId, tiny)
+	save_final_result(conversations_raw, multi_task_dv, composition_by_stageId, conversations_with_dv_and_composition, output_path, conversation_id, dv_id, use_mean_for_roundId, tiny)
