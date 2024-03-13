@@ -1,0 +1,13 @@
+id,conversation_num,speaker_nickname,message,expected_column,feature_level,expected_value
+1,1,A,hi,turn_taking_index,conv,0.75
+2,1,A,test,turn_taking_index,conv,0.75
+3,1,B,hello,turn_taking_index,conv,0.75
+4,1,A,test test,turn_taking_index,conv,0.75
+5,1,B,testing,turn_taking_index,conv,0.75
+6,2,C,I am speaking,turn_taking_index,conv,0
+7,2,C,all alone,turn_taking_index,conv,0
+8,3,D,we,turn_taking_index,conv,1
+9,3,E,take,turn_taking_index,conv,1
+10,3,D,absolutely,turn_taking_index,conv,1
+11,3,E,perfect,turn_taking_index,conv,1
+12,3,D,turns,turn_taking_index,conv,1
