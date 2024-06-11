@@ -52,3 +52,4 @@ I respond to that too",num_block_quote_responses,2
 30,1,test_B,(((((these parentheses are not properly closed.),num_parentheses,1
 31,1,test_B,((there are multiple parentheses here)),num_parentheses,2
 32,1,test_A,((1+(1+3+4)^2)+7+(9+8)),num_parentheses,4
+33,1,test_A,:) Wow! ;) Hello :-))) Hi;,num_emoji,3
